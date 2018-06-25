@@ -2,8 +2,16 @@ import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
-from scipy.stats import gaussian_kde
+import seaborn as sns
 
+
+def to_int(data):
+	res = []
+	for val in data:
+		if not "age_at_creation" in val:
+			res.append(int(val))
+
+	return res
 
 def normalize_weight(weight):
 	value = [0,0,0,0,0,0]
@@ -67,28 +75,28 @@ def normalize_body(bodytype):
 			value[7] += 1
 	return value
 
-def normalize_relationship(initially_seeking):
-	value = []
-	for rel in initially_seeking:
-		if int(rel) == 1:
-			value.append("mulher em relação procurando homens")
-		elif int(rel) == 2 :
-			value.append("Homem em relação procurando mulheres")
-		elif int(rel) == 3:
-			value.append("Solteiros procurando mulheres")
-		elif int(rel) == 4:
-			value.append("Solteiras procurando homens")
-		elif int(rel) == 5:
-			value.append("Homem procurando homens")
-		else:
-			value.append("Mulheres procurando mulheres")
-	return value
-
 def normalize_account_creation(created_on):
 	value = []
 	for date in created_on:
 		value.append(str(date)[0:4])
 	return value
+
+def normalize_drink(drink):
+	value = []
+	for rel in drink:
+		if rel != 'NULL':
+			if int(rel) == 1:
+				value.append('Nunca')
+			elif int(rel) == 2 :
+				value.append('Ocasionalmente')
+			elif int(rel) == 3:
+				value.append('Regularmente')
+			else :
+				value.append('Não especificado')
+		else:
+			value.append('Não especificado')
+	return value
+
 
 created_on = []
 updated_on = []
@@ -107,8 +115,10 @@ relationship = []
 open_to = []
 turns_on = []
 looking_for = []
+ethnicity = []
+age = []
 
-with open(,'r') as csvfile:
+with open("C://Users//jpms2//Desktop//data-science//data-science//ashley_madison.csv",'r') as csvfile:
     plots = csv.reader(csvfile, delimiter=',')
     for row in plots:
      	created_on.append(row[0])
@@ -121,14 +131,19 @@ with open(,'r') as csvfile:
      	weight.append(row[13])
      	height.append(row[14])
      	bodytype.append(row[15])
-     	smoke.append(row[16])
      	drink.append(row[17])
-     	initially_seeking.append(row[18])
      	relationship.append(row[19])
      	open_to.append(row[20])
      	turns_on.append(row[21])
      	looking_for.append(row[22])
 
+with open("C://Users//jpms2//Desktop//data-science//data-science//ashley_madison_preprocessed.csv",'r',encoding="utf8") as csvfile:
+    plots = csv.reader(csvfile, delimiter=',')
+    for row in plots:
+        ethnicity.append(row[11])
+        smoke.append(row[13])
+        initially_seeking.append(row[14])
+        age.append(row[16])
 # bar charts
 
 # weight chart
@@ -170,34 +185,52 @@ plt.title('Usuarios por tipo de corpo')
 plt.show()
 
 
+
 """ histograms """
 
-# inicialmente buscando
-plt.hist(normalize_relationship(initially_seeking[1:-1]), normed=True, bins=6)
-plt.ylabel('Probabilidade');
-plt.title('Procura por gênero')
-
-plt.show()
-
 # ano de adesão
-plt.hist(normalize_account_creation(created_on[1:-1]), normed=True, bins=6)
-plt.ylabel('Probabilidade');
+plt.hist(normalize_account_creation(created_on[1:-1]), rwidth=1, bins='auto')
+plt.ylabel('Quantidade');
 plt.title('Adesão')
 
 plt.show()
 
-# status de membro
+# bebe
+plt.hist(normalize_drink(drink[1:-1]), rwidth=0.25, bins=5)
+plt.ylabel('Quantidade')
+plt.title('Frequencia que bebe')
+
+plt.show()
+
+# fuma
+plt.hist(smoke[1:-1], rwidth=1, bins='auto')
+plt.ylabel('Quantidade')
+plt.title('Frequencia que fuma')
+
+plt.show()
+
+# etnia
+plt.hist(ethnicity[1:-1], rwidth=0.25, bins=9)
+plt.ylabel('Quantidade')
+plt.title('Etnia')
+
+plt.show()
+
+# inicialmente buscando
+plt.hist(initially_seeking[1:-1], rwidth=0.25, bins=5)
+plt.ylabel('Quantidade')
+plt.title('Tipo de relacionamento')
+
+plt.show()
 
 """ density """
-data = [1.5]*7 + [2.5]*2 + [3.5]*8 + [4.5]*3 + [5.5]*1 + [6.5]*8
-density = gaussian_kde(data)
-xs = np.linspace(0,8,200)
-density.covariance_factor = lambda : .25
-density._compute_covariance()
-plt.plot(xs,density(xs))
-#plt.show()
+data = age[1:-1]
+sns.set_style('whitegrid')
+sns.kdeplot(np.array(data), bw=0.5)
+plt.show()
 
 """ boxplot """
+"""
 spread = np.random.rand(50) * 100
 center = np.ones(25) * 50
 flier_high = np.random.rand(10) * 100 + 100
@@ -205,3 +238,4 @@ flier_low = np.random.rand(10) * -100
 data = np.concatenate((spread, center, flier_high, flier_low), 0)
 plt.boxplot(data)
 #plt.show()
+"""
